@@ -18,7 +18,7 @@ Bu araç **yalnızca kurulum ortamı (ISO) hazırlar** — indirilen dosyalar Mi
 
 - Bu script içinde **etkinleştirme, kırma (crack), KMS emülatörü veya lisans anahtarı üretme gibi hiçbir mekanizma yoktur.**
 - Oluşturulan ISO ile Office'i kurduktan sonra, kullanabilmek için **geçerli ve satın alınmış bir Microsoft 365 aboneliği veya Office LTSC lisansı/ürün anahtarı** ile etkinleştirme yapmanız gerekir.
-- LTSC 2024 seçiminde araç bunu arayüzde de belirtir: *"ISO yalnızca kurulum kaynağıdır, lisans içermez (KMS/MAK gerekir)."*
+- LTSC 2024 seçiminde araç bunu arayüzde de belirtir: *"ISO yalnızca kurulum kaynağıdır, lisans içermez."*
 - Lisanssız/etkinleştirilmemiş Office kısıtlı modda (bildirim şeridi, düzenleme kapalı vb.) çalışır; bu bir araç kısıtlaması değil, Microsoft'un lisans politikasıdır.
 
 Lisans satın almak için: [Microsoft 365 resmi sitesi](https://www.microsoft.com/microsoft-365)
