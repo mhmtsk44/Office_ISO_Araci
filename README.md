@@ -48,6 +48,6 @@ Geçici indirme/çıkartma işlemleri `%TEMP%` altında benzersiz bir klasörde 
 
 ## Lisans (Bu Aracın Kendisi)
 
-Bu araç serbestçe kullanılabilir, değiştirilebilir ve dağıtılabilir. Kaynak belirtmek zorunlu değil, takdir edilir.
+Bu proje [MIT Lisansı](./LICENSE) ile lisanslanmıştır — serbestçe kullanabilir, değiştirebilir ve dağıtabilirsiniz; yazılım "olduğu gibi", herhangi bir garanti verilmeksizin sunulur.
 
 *(Karışıklığı önlemek için: yukarıdaki "Lisans" başlığı bu PowerShell scriptinin kullanım koşuluyla ilgilidir; Office ürününün lisansıyla bir ilgisi yoktur.)*
