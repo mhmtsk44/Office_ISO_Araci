@@ -1,11 +1,34 @@
-﻿<#
+<#
 .SYNOPSIS
-    Office Taşınabilir ISO Aracı - v5.0.9 (Temp Dizin + Kesin UI Çözümü)
+    Office Taşınabilir ISO Aracı - v5.1.2 (Görünür Kurulum İlerlemesi)
 .DESCRIPTION
     v5.0.9: ODT indirme ve çıkartma işlemleri C:\ODT yerine %TEMP% dizininde 
             benzersiz bir klasöre taşındı. İzin (Permission) sorunları önlendi.
             Adım 4'teki yazıların kesilmesini önlemek için AutoSize kapatılıp 
             yükseklikler (Height) kalıcı olarak devasa boyutlara sabitlendi.
+    v5.1.0: setup.exe'ye doğrudan çift tıklayınca "The configuration file
+            wasn't specified (0-2054)" hatası alınıyordu. ODT'nin setup.exe'si
+            dosya adı ne olursa olsun (configuration.xml dahil) /configure
+            parametresi verilmeden ASLA otomatik XML aramaz — bu her zaman
+            elle veya bir betikle belirtilmelidir. Çözüm: x86/x64 klasörlerine
+            "setup.exe /configure configuration.xml" komutunu çalıştıran bir
+            Kur.cmd başlatıcısı eklendi; x86x64 seçiliyse kökte OS mimarisini
+            otomatik algılayan bir Kur.cmd de var. Kullanıcı artık setup.exe
+            yerine Kur.cmd'ye çift tıklamalı.
+    v5.1.1: Yönetici izni olmadan çalıştırıldığında ODT "We couldn't find the
+            specified configuration file" (0-2048) hatası veriyordu — bilinen
+            bir ODT davranışı, ayrıcalık yükseltilmeden XML'i bulamıyor.
+            Kur.cmd'ye otomatik UAC yükseltme eklendi (net session ile yönetici
+            kontrolü, değilse PowerShell Start-Process -Verb RunAs ile kendini
+            yeniden başlatıyor). Ayrıca XML yolu %~dp0 ile mutlak hale
+            getirildi (elevasyon sonrası çalışma dizini değişse bile bulunur).
+            Kullanıcı artık sağ tık/"Yönetici olarak çalıştır" yapmadan sadece
+            çift tıklayabiliyor; UAC istemi otomatik çıkar.
+    v5.1.2: configuration.xml şablonunda Display Level="None" idi, yani
+            kurulum tamamen sessiz/görünmez çalışıyordu ve kullanıcı ilerleme
+            durumunu takip edemiyordu. "Full" olarak değiştirildi; artık
+            Office'in kendi kurulum ilerleme penceresi (indirme/kurulum yüzdesi)
+            görünür şekilde çıkıyor.
 .NOTES
     Hazırlayan : Mehmet IŞIK
 #>
@@ -543,7 +566,7 @@ $btnIleri.Add_Click({
     }
 
     $gerekli = 10; if ($script:Sec.Mimari -eq "x86x64") { $gerekli = 18 }
-    try { $cBos = [math]::Round((Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'").FreeSpace/1GB,1) } catch { $cBos = 999 }
+    try { $cBos = [math]::Round(([System.IO.DriveInfo]"C:").AvailableFreeSpace/1GB,1) } catch { $cBos = 999 }
     if ($cBos -lt $gerekli) {
         $c = [System.Windows.Forms.MessageBox]::Show(
             "C: sürücüsünde $cBos GB boş alan var, ~$gerekli GB gerekiyor.`r`n`r`nDevam edilsin mi?",
@@ -698,24 +721,31 @@ $btnIleri.Add_Click({
 {4}
     </Product>{5}
   </Add>
-  <Display Level="None" AcceptEULA="TRUE" />
+  <Display Level="Full" AcceptEULA="TRUE" />
 </Configuration>
 "@
         $utf8=New-Object System.Text.UTF8Encoding($false)
         if ($cfg.Mimari -in @("x86","x86x64")) {
-            [System.IO.File]::WriteAllText("$X86\c86.xml",($sablon -f "32",$cfg.Kanal,$uid,$cfg.Dil,$excXML,$ekXML),$utf8)
+            [System.IO.File]::WriteAllText("$X86\configuration.xml",($sablon -f "32",$cfg.Kanal,$uid,$cfg.Dil,$excXML,$ekXML),$utf8)
             Copy-Item "$ODT\setup.exe" "$X86\setup.exe"
+            [System.IO.File]::WriteAllText("$X86\Kur.cmd","@echo off`r`nnet session >nul 2>&1`r`nif %errorlevel% neq 0 (`r`n    powershell -Command `"Start-Process -FilePath '%~f0' -Verb RunAs`"`r`n    exit /b`r`n)`r`ncd /d `"%~dp0`"`r`nsetup.exe /configure `"%~dp0configuration.xml`"`r`n",$utf8)
         }
         if ($cfg.Mimari -in @("x64","x86x64")) {
-            [System.IO.File]::WriteAllText("$X64\c64.xml",($sablon -f "64",$cfg.Kanal,$uid,$cfg.Dil,$excXML,$ekXML),$utf8)
+            [System.IO.File]::WriteAllText("$X64\configuration.xml",($sablon -f "64",$cfg.Kanal,$uid,$cfg.Dil,$excXML,$ekXML),$utf8)
             Copy-Item "$ODT\setup.exe" "$X64\setup.exe"
+            [System.IO.File]::WriteAllText("$X64\Kur.cmd","@echo off`r`nnet session >nul 2>&1`r`nif %errorlevel% neq 0 (`r`n    powershell -Command `"Start-Process -FilePath '%~f0' -Verb RunAs`"`r`n    exit /b`r`n)`r`ncd /d `"%~dp0`"`r`nsetup.exe /configure `"%~dp0configuration.xml`"`r`n",$utf8)
+        }
+        if ($cfg.Mimari -eq "x86x64") {
+            $kokKur = "@echo off`r`nnet session >nul 2>&1`r`nif %errorlevel% neq 0 (`r`n    powershell -Command `"Start-Process -FilePath '%~f0' -Verb RunAs`"`r`n    exit /b`r`n)`r`ncd /d `"%~dp0`"`r`nif defined ProgramFiles(x86) (`r`n    cd x64`r`n    setup.exe /configure `"%~dp0x64\configuration.xml`"`r`n) else (`r`n    cd x86`r`n    setup.exe /configure `"%~dp0x86\configuration.xml`"`r`n)`r`n"
+            [System.IO.File]::WriteAllText("$ODT\Kur.cmd",$kokKur,$utf8)
         }
         LogYaz "XML hazır. Hariç tutulanlar: $($haric -join ', ')"
+        LogYaz "Kur.cmd başlatıcı(lar) eklendi (setup.exe yerine bu dosya çalıştırılmalı)."
 
         # ---------- 3) İNDİRME (5-70%) — GERÇEK BAYT ----------
         $adimlar=@()
-        if ($cfg.Mimari -in @("x86","x86x64")) { $adimlar += ,@($X86,"c86.xml","32-bit") }
-        if ($cfg.Mimari -in @("x64","x86x64")) { $adimlar += ,@($X64,"c64.xml","64-bit") }
+        if ($cfg.Mimari -in @("x86","x86x64")) { $adimlar += ,@($X86,"configuration.xml","32-bit") }
+        if ($cfg.Mimari -in @("x64","x86x64")) { $adimlar += ,@($X64,"configuration.xml","64-bit") }
 
         $tahminGB = 1.6 + ($cfg.Secimler.Count * 0.35)
         $hedefBayt = [int64]($tahminGB * 1GB)
