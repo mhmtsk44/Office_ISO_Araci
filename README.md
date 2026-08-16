@@ -37,7 +37,7 @@ Lisans satın almak için: [Microsoft 365 resmi sitesi](https://www.microsoft.co
 4. İndirme ve ISO oluşturma tamamlanınca dosya hedef klasörde hazır olur (yanında `.sha256` dosyasıyla).
 
 ```powershell
-iwr "https://raw.githubusercontent.com/mhmtsk44/Office_ISO_Araci/refs/heads/main/Office_ISO_Araci_v5_0_DPI_Aware.ps1" -OutFile "$env:TEMP\Office_ISO.ps1"; powershell -ExecutionPolicy Bypass -File "$env:TEMP\Office_ISO.ps1"; exit
+iwr "https://raw.githubusercontent.com/mhmtsk44/Office_ISO_Araci/refs/heads/main/Office_ISO_Araci.ps1" -OutFile "$env:TEMP\Office_ISO.ps1"; powershell -ExecutionPolicy Bypass -File "$env:TEMP\Office_ISO.ps1"; exit
 ```
 
 > ⚠️ Kaynağı doğrulamadan internetten indirip çalıştırdığınız her script gibi dikkatli olun; araç yönetici yetkisiyle çalışır ve sisteme dosya indirir/yazar.
